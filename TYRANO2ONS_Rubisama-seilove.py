@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageEnhance
 import subprocess
 import chardet
 import shutil
@@ -368,6 +368,11 @@ def text_cnv():
 				height_r = 272
 
 			img_resize = img.resize((int(width_r), int(height_r)))
+
+			if os.path.basename(img_path).lower()=='frame.png':#フレーム明るすぎて文字見えないので暗くする
+				enhancer = ImageEnhance.Brightness(img_resize)
+				img_resize = enhancer.enhance(0.6)
+
 			img_resize.save(img_path)
 
 
