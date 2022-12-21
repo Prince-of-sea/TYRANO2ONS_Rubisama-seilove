@@ -96,6 +96,9 @@ def tati_create(storage, width, height, left, top):
 
 def music_cnv():
 	pathlist = (glob.glob(os.path.join(sound_dir, '*.*')))
+	pathlist += (glob.glob(os.path.join(sound_dir, 'noname_1', '*.*')))
+	pathlist += (glob.glob(os.path.join(sound_dir, 'seira_1', '*.*')))
+	pathlist += (glob.glob(os.path.join(sound_dir, 'seira_2', '*.*')))
 
 	for f in pathlist:
 		fogg = (f + ".ogg")
@@ -149,7 +152,7 @@ def text_cnv():
 	with open(DEFAULT_TXT) as f:
 		txt = f.read()
 
-	pathlist = glob.glob(os.path.join(scenario_dir, 'scene_all.ks'))#listにする意味(めんどくさくてコピペしてきた)
+	pathlist = glob.glob(os.path.join(scenario_dir, 'scene_all_v110.ks'))#listにする意味(めんどくさくてコピペしてきた)
 
 	for snr_path in pathlist:
 		
@@ -297,7 +300,8 @@ def text_cnv():
 	txt = txt.replace(r'ゲーム本編', '\n*scr_start\n')
 
 	#ガバガバ修正
-	txt = txt.replace(r'lsp 20,"taticnv/chara/seira/裸_腕広げ_すまし.png_963_1360_0_-10.png",0,0:print 14', '')
+	txt = txt.replace(r'lsp 20,"taticnv/chara/seira/裸_腕広げ_すまし.png_1416_2000_0_-10.png",0,0:print 14', '')
+	txt = txt.replace(r'lsph 23,"taticnv/chara/seira/mainvisual.jpg_1280_1810_0_-400.png",0,0', r'lsp 23,"taticnv/chara/seira/mainvisual.jpg_1280_1810_0_-400.png",0,0:print 15')
 
 	if PSP:
 		txt = txt.replace(r';$V2000G200S1280,720L10000', r';$V2000G200S480,272L10000')
@@ -379,7 +383,7 @@ def text_cnv():
 def junk_del():
 	shutil.rmtree(os.path.join(bgimage_dir))
 	shutil.rmtree(bgm_dir)
-	shutil.rmtree(os.path.join(sound_dir,'seira'))
+	#shutil.rmtree(os.path.join(sound_dir,'seira'))
 	shutil.rmtree(os.path.join(same_hierarchy,'data','scenario'))
 	shutil.rmtree(os.path.join(same_hierarchy,'data','system'))
 	shutil.rmtree(os.path.join(same_hierarchy,'data','video'))

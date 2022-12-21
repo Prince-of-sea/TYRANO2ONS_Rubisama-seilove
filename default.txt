@@ -22,6 +22,18 @@ effect 10,10,500
 game
 ;----------------------------------------
 *pretext_lb
+	
+	;ボイス周り
+	if $11=="？？？"   itoa $170,%170:dwave 0,"data/sound/noname_1/SeiraVoice("+$170+").ogg":inc %170
+	if $11=="seira"    itoa $170,%171:dwave 0,"data/sound/seira_1/SeiraVoice("+$170+").ogg" :inc %171
+	if $11=="seira_m"  itoa $170,%172:dwave 0,"data/sound/seira_2/SeiraVoice("+$170+").ogg" :inc %172
+	if $11=="mv"       itoa $170,%173:dwave 0,"data/sound/seira_1/SeiraVoice("+$170+").ogg" :inc %173
+	
+	if $11=="seira" mov $11,"セイラ"
+	if $11=="seira_m" mov $11,"セイラ"
+	if $11=="mv" mov $11,"セイラ"
+	
+	print 1
 	if %199!=1 lsp 10,":s/26,26,0;#ffffff"+$11,150/%190  ,530/%190+%191	;名前の表示
 	if %199==1 lsp 10,":s/14,14,0;#ffffff"+$11,150/%190-2,530/%190+%191	;名前の表示
 return
@@ -52,6 +64,10 @@ return
 ;	
 ;----------------------------------------
 *start
+mov %170,1		;noname_1 - ？？？
+mov %171,1		;seira_1 - seira
+mov %172,1		;seira_2 - seira_m
+mov %173,1089	;seira_1 - mv
 
 ;<<-PSP_MODE->>
 
@@ -82,7 +98,7 @@ saveon
 
 bgm "data/bgm_/"+$66
 bg "data/bgimage_/title_1.png",10
-dwave 0,"data/sound/4_SeiraVoice.ogg"
+dwave 0,"data/sound/noname_1/SeiraVoice(4).ogg"
 
 
 lsp 30, "data/image/title/button_start_hover.png"  ,788/%190,237/%190+%191
@@ -112,7 +128,7 @@ print 1
 	
 	print 1
 	btnwait %20
-	csp 40
+	
 	if %20==30 csp -1:stop:goto *scr_start
 	if %20==31 csp -1:stop:bg black,10:systemcall load:bg black,10:goto *title_menu
 	if %20==34 csp -1:stop:bg black,10:select "続ける",*tuduki,"終了する",*owari
