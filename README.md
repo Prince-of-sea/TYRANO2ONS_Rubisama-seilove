@@ -30,9 +30,120 @@ v0.7.2現在ではとりあえず最後まで読めるだけ、な状態です
 
  4. 起動させ変換(最低でも数分程度はかかります)<br>
     変換前の時点で以下のような構成になっていればOKです↓<br>
-    ![](image1.png)<br>
-    **※"PSP向け以外に変換する場合、ここで"ONS.INI"を削除してください**<br>
-    **削除しなかった場合、そのままPSP向けに変換されます**<br>
+```
+C:.
+│  TYRANO2ONS_Rubisama-seilove.py
+│  
+└─data
+    ├─bgimage
+    │      bg_cg.png
+    │      (～略)
+    │      食堂.jpg
+    │      
+    ├─bgm
+    │      ChilledCow-Mom.mp3
+    │      (～略)
+    │      高貴なご趣味.mp3
+    │      
+    ├─fgimage
+    │  ├─chara
+    │  │  └─seira
+    │  │          mainvisual.jpg
+    │  │          (～略)
+    │  │          裸_腕広げ_驚き_眼鏡.png
+    │  │          
+    │  └─default
+    ├─image
+    │  │  frame.png
+    │  │  (～略)
+    │  │  obon.png
+    │  │  
+    │  ├─button
+    │  │      auto.png
+    │  │      (～略)
+    │  │      title2.png
+    │  │      
+    │  ├─config
+    │  │      arrow_next.png
+    │  │      (～略)
+    │  │      skipon.png
+    │  │      
+    │  └─title
+    │          button_cg.png
+    │          (～略)
+    │          button_start_hover.png
+    │          
+    ├─others
+    │  ├─3d
+    │  │  ├─model
+    │  │  ├─sprite
+    │  │  └─texture
+    │  └─plugin
+    │      └─seira
+    │          │  backlog.css
+    │          │  (～略)
+    │          │  title.css
+    │          │  
+    │          ├─html
+    │          │      backlog.html
+    │          │      load.html
+    │          │      save.html
+    │          │      
+    │          ├─images
+    │          │  ├─background
+    │          │  │      background.png
+    │          │  │      (～略)
+    │          │  │      title_2.png
+    │          │  │      
+    │          │  ├─button
+    │          │  │      arrow_down.png
+    │          │  │      (～略)
+    │          │  │      title2.png
+    │          │  │      
+    │          │  ├─frame
+    │          │  │      saveslot.png
+    │          │  │      saveslot_hover.png
+    │          │  │      
+    │          │  └─logo
+    │          │          logo.png
+    │          │          
+    │          └─testMessagePlus
+    │                  gMessageTester.js
+    │                  sampletext.ks
+    │                  style.css
+    │                  
+    ├─scenario
+    │      cg.ks
+    │      (～略)
+    │      tyrano.ks
+    │      
+    ├─sound
+    │  │  caster.mp3
+    │  │  (～略)
+    │  │  電車輪_2.mp3
+    │  │  
+    │  ├─noname_1
+    │  │      SeiraVoice(1).ogg
+    │  │      (～略)
+    │  │      SeiraVoice(9).ogg
+    │  │      
+    │  ├─seira_1
+    │  │      SeiraVoice(1).ogg
+    │  │      (～略)
+    │  │      SeiraVoice(999).ogg
+    │  │      
+    │  └─seira_2
+    │          SeiraVoice(1).ogg
+    │          (～略)
+    │          SeiraVoice(6).ogg
+    │          
+    ├─system
+    │      Config.tjs
+    │      KeyConfig.js
+    │      
+    └─video
+            endroll.webm
+```
 
  5. ウィンドウが消え、0.txtができれば完成<br>
     変換済みファイルと共に利用ハードへ転送

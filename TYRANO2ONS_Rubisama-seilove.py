@@ -1,4 +1,5 @@
-from PIL import Image, ImageEnhance
+from PIL import Image
+import concurrent.futures
 import subprocess
 import chardet
 import shutil
@@ -7,31 +8,159 @@ import sys
 import os
 import re
 
+def default_txt():
+	s = ''';$V2000G200S1280,720L10000
+*define
 
+caption "ご主人様、セイラに夢みたいないちゃラブご奉仕させていただけますか for ONScripter"
 
-same_hierarchy = (os.path.dirname(sys.argv[0]))#同一階層のパスを変数へ代入
-DEFAULT_TXT = os.path.join(same_hierarchy, 'default.txt')
+rmenu "セーブ",save,"ロード",load,"リセット",reset
+savenumber 11
+transmode alpha
+globalon
+rubyon
+nsa
+humanz 10
+windowback
 
+;---------- NSC2ONS4PSP強制変換機能ここから ----------
+; 以下の文字列を認識すると、解像度に関わらず
+; ONScripter_Multi_Converterの変換が可能になります
+; PSP変換時でも座標ズレが発生しないようにしてください
+; 
+; <ONS_RESOLUTION_CHECK_DISABLED>
+; 
+;---------- NSC2ONS4PSP強制変換機能ここまで ----------
 
-PSP = bool( os.path.isfile(os.path.join(same_hierarchy,'ONS.INI')) )
+pretextgosub *pretext_lb
+defsub swind
+defsub stopfadeout
 
-scenario_dir = os.path.join(same_hierarchy,'data','scenario')
-bgimage_dir = os.path.join(same_hierarchy,'data','bgimage')
-fgimage_dir = os.path.join(same_hierarchy,'data','fgimage')
-bgm_dir = os.path.join(same_hierarchy,'data','bgm')
-image_dir = os.path.join(same_hierarchy,'data','image')
-others_dir = os.path.join(same_hierarchy,'data','others')
-sound_dir = os.path.join(same_hierarchy,'data','sound')
+effect 10,10,500
 
-effect_startnum=10
-effect_list=[]
+;<<-EFFECT->>
 
-str2var_dict={}
-str2var_num=[20, 20, 1000]#名前sp,
+game
+;----------------------------------------
+*pretext_lb
+	
+	;ボイス周り
+	if $11=="？？？"   itoa $170,%170:dwave 0,"data/sound/noname_1/SeiraVoice("+$170+").ogg":inc %170
+	if $11=="seira"    itoa $170,%171:dwave 0,"data/sound/seira_1/SeiraVoice("+$170+").ogg" :inc %171
+	if $11=="seira_m"  itoa $170,%172:dwave 0,"data/sound/seira_2/SeiraVoice("+$170+").ogg" :inc %172
+	if $11=="mv"       itoa $170,%173:dwave 0,"data/sound/seira_1/SeiraVoice("+$170+").ogg" :inc %173
+	
+	if $11=="seira" mov $11,"セイラ"
+	if $11=="seira_m" mov $11,"セイラ"
+	if $11=="mv" mov $11,"セイラ"
+	
+	print 1
+	if %199!=1 lsp 10,":s/26,26,0;#ffffff"+$11,150/%190  ,530/%190+%191	;名前の表示
+	if %199==1 lsp 10,":s/14,14,0;#ffffff"+$11,150/%190-2,530/%190+%191	;名前の表示
+return
 
-sel_dict={}
+*swind
+	getparam %0
+	if %199!=1 setwindow 140/%190,580/%190+%191,37,3,26,26,2,4,20,0,1,"data/image/frame_black.png",0,500/%190+%191
+	if %199==1 setwindow 140/%190,580/%190+%191,37,3,14,14,0,1,20,0,1,"data/image/frame_black.png",0,500/%190+%191
+return
 
+*stopfadeout
+	getparam %5
+	bgmfadeout %5
+	stop
+	bgmfadeout 0
+return
+;----------------------------------------
+;数字変数
+;	
+;文字変数
+;	$11		名前
+;	
+;	
+;スプライト番号
+;	
+;----------------------------------------
+*start
+mov %170,1		;noname_1 - ？？？
+mov %171,1		;seira_1 - seira
+mov %172,1		;seira_2 - seira_m
+mov %173,1089	;seira_1 - mv
 
+;解像度が本来のものに一致しない場合PSP仕様へ
+lsph 0,"data/bgimage_/title_1.png"0,0
+getspsize 0,%0,%1
+if %0==1280 mov %199,0
+if %0!=1280 mov %199,1
+
+if %199==1 mov %190,2:mov %191,3
+if %199!=1 mov %190,1:mov %191,0
+
+;多分これで720pは誤魔化せる
+;	普通の場合xy	:/%190
+;	下辺合わせy		:/%190+%191
+
+bgmvol 50		;BGM音量
+voicevol 100	;ボイス音量
+defsevol 30		;効果音音量
+;mov %334,1		;クリア判定
+;
+;#			名前
+;[l][r]		@
+;[p]		\
+
+swind 26
+;----------------------------------------
+*title_menu
+saveon
+
+;<<-TITLE_BGM->>
+
+bgm "data/bgm_/"+$66
+bg "data/bgimage_/title_1.png",10
+dwave 0,"data/sound/noname_1/SeiraVoice(4).ogg"
+
+lsp 30, "data/image/title/button_start_hover.png"  ,788/%190,237/%190+%191
+lsp 31, "data/image/title/button_load_hover.png"   ,798/%190,327/%190+%191
+lsp 32, "data/image/title/button_cg_hover.png"     ,808/%190,417/%190+%191
+lsp 33, "data/image/title/button_replay_hover.png" ,818/%190,507/%190+%191
+lsp 34, "data/image/title/button_config_hover.png" ,828/%190,597/%190+%191
+lsph 35,"data/image/title/button_start.png"        ,788/%190,237/%190+%191
+lsph 36,"data/image/title/button_load.png"         ,798/%190,327/%190+%191
+lsph 37,"data/image/title/button_cg.png"           ,808/%190,417/%190+%191
+lsph 38,"data/image/title/button_replay.png"       ,818/%190,507/%190+%191
+lsph 39,"data/image/title/button_config.png"       ,828/%190,597/%190+%191
+
+lsp 40,"data/bgimage_/logo.png",630/%190,20/%190+%191
+
+print 1
+*title_loop
+	bclear
+	btrans
+	
+	exbtn_d     "C30C31C32C33C34P35P36P37P38P39"
+	exbtn 30,30,"P30C31C32C33C34C35P36P37P38P39"
+	exbtn 31,31,"C30P31C32C33C34P35C36P37P38P39"
+	exbtn 32,32,"C30C31P32C33C34P35P36C37P38P39"
+	exbtn 33,33,"C30C31C32P33C34P35P36P37C38P39"
+	exbtn 34,34,"C30C31C32C33P34P35P36P37P38C39"
+	
+	print 1
+	btnwait %20
+	
+	if %20==30 csp -1:stop:goto *scr_start
+	if %20==31 csp -1:stop:bg black,10:systemcall load:bg black,10:goto *title_menu
+	if %20==34 csp -1:stop:bg black,10:select "続ける",*tuduki,"終了する",*owari
+	
+goto *title_loop
+
+*tuduki
+reset
+*owari
+end
+;----------------------------------------
+'''
+	return s
 #--------------------def--------------------
 
 def krcmd2krdict(c):
@@ -43,9 +172,7 @@ def krcmd2krdict(c):
 	return kr_dict
 
 
-def effect_edit(t,f):
-	global effect_list
-
+def effect_edit(t,f, effect_startnum, effect_list):
 	list_num=0
 	if re.fullmatch(r'[0-9]+',t):#timeが数字のみ＝本処理
 
@@ -57,26 +184,24 @@ def effect_edit(t,f):
 			effect_list.append([t,f])
 			list_num = len(effect_list)+effect_startnum
 
-	return str(list_num)
+	return str(list_num), effect_startnum, effect_list
 
 
-def str2var(s,i):
-	global str2var_dict
-	global str2var_num
-
-	d=str2var_dict.get(s)
+def str2var(s2v_d, s2v_n, s,i):
+	d=s2v_d.get(s)
 
 	if d:
-		s2=d
+		sv=d
 	else:
-		str2var_dict[s]=str2var_num[i]
-		s2=str2var_num[i]
-		str2var_num[i]+=1
+		s2v_d[s]=s2v_n[i]
+		sv=s2v_n[i]
+		s2v_n[i]+=1
 	
-	return s2
+	return s2v_d, s2v_n, str(sv)
 
 
-def tati_create(storage, width, height, left, top):
+
+def tati_create(same_hierarchy, fgimage_dir, storage, width, height, left, top):
 	name = ('taticnv/' + storage + '_' + width + '_' + height + '_' + left + '_' + top + '.png')
 	namepath = os.path.join(same_hierarchy,name)
 	if not os.path.exists(namepath):
@@ -87,25 +212,17 @@ def tati_create(storage, width, height, left, top):
 
 		im_new = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
 		im_new.paste(im_r, (int(640-(int(width)/2)+int(left)), int(top)))
-		if PSP:
-			im_new = im_new.resize((480, 272))
 		im_new.save(namepath)
 
 	return name
 
 
-def music_cnv():
-	pathlist = (glob.glob(os.path.join(sound_dir, '*.*')))
-	pathlist += (glob.glob(os.path.join(sound_dir, 'noname_1', '*.*')))
-	pathlist += (glob.glob(os.path.join(sound_dir, 'seira_1', '*.*')))
-	pathlist += (glob.glob(os.path.join(sound_dir, 'seira_2', '*.*')))
-
-	for f in pathlist:
+def music_cnv_main(f):
 		fogg = (f + ".ogg")
 		try:
 			subprocess.run(['ffmpeg', '-y', '-vn',
 				'-i', f,
-				'-ab', '56k',
+				#'-ab', '56k',
 				'-ar', '44100',
 				'-ac', '2',	fogg,
 			], shell=True)
@@ -116,43 +233,70 @@ def music_cnv():
 			os.rename(fogg, f)
 
 
-def bgm_cnv():#一旦wavにしないと動かないのど う し て
+def music_cnv(sound_dir):
+	pathlist = (glob.glob(os.path.join(sound_dir, '*.*')))
+	pathlist += (glob.glob(os.path.join(sound_dir, 'noname_1', '*.*')))
+	pathlist += (glob.glob(os.path.join(sound_dir, 'seira_1', '*.*')))
+	pathlist += (glob.glob(os.path.join(sound_dir, 'seira_2', '*.*')))
+
+	with concurrent.futures.ThreadPoolExecutor() as executor:#マルチスレッドで高速化
+		futures = []
+		for f in pathlist:
+			futures.append(executor.submit(music_cnv_main, f))
+		
+		concurrent.futures.as_completed(futures)
+
+def bgm_cnv_main(f, s2v_d, s2v_n, same_hierarchy):
+	fn = os.path.basename(f).lower()
+	s2v_d, s2v_n, sv = str2var(s2v_d, s2v_n, fn, 2)
+	fwav = os.path.join(same_hierarchy, 'data', 'bgm_', str(sv) + ".wav")
+	s2v_d, s2v_n, sv = str2var(s2v_d, s2v_n, fn, 2)
+	fogg = os.path.join(same_hierarchy, 'data', 'bgm_', str(sv) + ".ogg")
+	os.makedirs(os.path.dirname(fwav), exist_ok=True)#フォルダなかったら作る
+	try:
+		subprocess.run(['ffmpeg', '-y',
+			'-i', f,
+			fwav,
+		], shell=True)
+	except:
+		pass
+
+	try:
+		subprocess.run(['ffmpeg', '-y',
+			'-i', fwav,
+			#'-ab', '112k',
+			'-ar', '44100',
+			'-ac', '2',	
+			fogg,
+		], shell=True)
+	except:
+		pass
+
+	os.remove(fwav)
+
+
+def bgm_cnv(same_hierarchy, s2v_d, s2v_n, bgm_dir):#一旦wavにしないと動かないのど う し て
 	pathlist = (glob.glob(os.path.join(bgm_dir, '*.*')))
 
-	for f in pathlist:
-		fn = os.path.basename(f).lower()
-		fwav = os.path.join(same_hierarchy, 'data', 'bgm_', str(str2var(fn, 2)) + ".wav")
-		fogg = os.path.join(same_hierarchy, 'data', 'bgm_', str(str2var(fn, 2)) + ".ogg")
-		os.makedirs(os.path.dirname(fwav), exist_ok=True)#フォルダなかったら作る
-		try:
-			subprocess.run(['ffmpeg', '-y',
-				'-i', f,
-				fwav,
-			], shell=True)
-		except:
-			pass
-
-		try:
-			subprocess.run(['ffmpeg', '-y',
-				'-i', fwav,
-				'-ab', '112k',
-				'-ar', '44100',
-				'-ac', '2',	
-				fogg,
-			], shell=True)
-		except:
-			pass
-		os.remove(fwav)
+	with concurrent.futures.ThreadPoolExecutor() as executor:#マルチスレッドで高速化
+		futures = []
+		for f in pathlist:
+			futures.append(executor.submit(bgm_cnv_main, f, s2v_d, s2v_n, same_hierarchy))
+		
+		concurrent.futures.as_completed(futures)
+	return s2v_d, s2v_n
+		
 
 
 #--------------------0.txt作成--------------------
-def text_cnv():
+def text_cnv(s2v_d, s2v_n, same_hierarchy, bgimage_dir, fgimage_dir):
+	effect_startnum=10
+	effect_list=[]
+
 	tati_now = {}
+	txt = default_txt()
 
-	with open(DEFAULT_TXT) as f:
-		txt = f.read()
-
-	pathlist = glob.glob(os.path.join(scenario_dir, 'scene_all_v110.ks'))#listにする意味(めんどくさくてコピペしてきた)
+	pathlist = glob.glob(os.path.join(same_hierarchy,'data','scenario', 'scene_all_v110.ks'))#listにする意味(めんどくさくてコピペしてきた)
 
 	for snr_path in pathlist:
 		
@@ -194,12 +338,15 @@ def text_cnv():
 						d_method_ = d.get('method') if d.get('method') else 'crossfade'
 						d_time_ = d.get('time') if d.get('time') else '500'
 						if d['storage']=='真っ黒.png':
-							line = 'vsp 10,0:bg black,' + effect_edit(d_time_, d_method_) + '\n'
+							s, effect_startnum, effect_list = effect_edit(d_time_, d_method_, effect_startnum, effect_list)
+							line = 'vsp 10,0:bg black,' + s + '\n'
 						else:
-							line = 'vsp 10,0:bg "data\\bgimage_\\' + d['storage'] + '",' + effect_edit(d_time_, d_method_) + '\n'
+							s, effect_startnum, effect_list = effect_edit(d_time_, d_method_, effect_startnum, effect_list)
+							line = 'vsp 10,0:bg "data\\bgimage_\\' + d['storage'] + '",' + s + '\n'
 
 					elif kr_cmd == 'cg':
-						line = 'vsp 10,0:bg "data\\bgimage_\\' + d['storage'] + '",' + effect_edit('500', 'crossfade') + '\n'
+						s, effect_startnum, effect_list = effect_edit('500', 'crossfade', effect_startnum, effect_list)
+						line = 'vsp 10,0:bg "data\\bgimage_\\' + d['storage'] + '",' + s + '\n'
 
 					elif kr_cmd == 'chara_new':
 						
@@ -211,8 +358,9 @@ def text_cnv():
 						tati_now[d['name']]['height'] = d['height']
 						tati_now[d['name']]['left'] = d['left']
 						tati_now[d['name']]['top'] = d['top']
-						
-						line = 'lsph ' + str(str2var(d['name'], 1)) + ',"' + tati_create(d['storage'], d['width'], d['height'], d['left'], d['top']) + '",0,0\n'
+
+						s2v_d, s2v_n, sv = str2var(s2v_d, s2v_n, d['name'], 1)
+						line = 'lsph ' + str(sv) + ',"' + tati_create(same_hierarchy, fgimage_dir, d['storage'], d['width'], d['height'], d['left'], d['top']) + '",0,0\n'
 
 					elif kr_cmd == 'chara_move':
 						d2 = {}
@@ -223,7 +371,8 @@ def text_cnv():
 							else:
 								d2[a] = tati_now[d['name']][a]
 
-						line = 'lsph ' + str(str2var(d['name'], 1)) + ',"' + tati_create(d2['storage'], d2['width'], d2['height'], d2['left'], d2['top']) + '",0,0\n'
+						s2v_d, s2v_n, sv = str2var(s2v_d, s2v_n, d['name'], 1)
+						line = 'lsph ' + str(sv) + ',"' + tati_create(same_hierarchy, fgimage_dir, d2['storage'], d2['width'], d2['height'], d2['left'], d2['top']) + '",0,0\n'
 
 					elif kr_cmd == 'chara_show':
 						d2 = {}
@@ -236,9 +385,12 @@ def text_cnv():
 						
 						time = d.get('time') if d.get('time') else False
 						if time:
-							line = 'lsp ' + str(str2var(d['name'], 1)) + ',"' + tati_create(d2['storage'], d2['width'], d2['height'], d2['left'], d2['top']) + '",0,0:print ' + effect_edit(time, 'crossfade') + '\n'
+							s, effect_startnum, effect_list = effect_edit(time, 'crossfade', effect_startnum, effect_list)
+							s2v_d, s2v_n, sv = str2var(s2v_d, s2v_n, d['name'], 1)
+							line = 'lsp ' + str(sv) + ',"' + tati_create(same_hierarchy, fgimage_dir, d2['storage'], d2['width'], d2['height'], d2['left'], d2['top']) + '",0,0:print ' + s + '\n'
 						else:
-							line = 'lsph ' + str(str2var(d['name'], 1)) + ',"' + tati_create(d2['storage'], d2['width'], d2['height'], d2['left'], d2['top']) + '",0,0:print 1\n'
+							s2v_d, s2v_n, sv = str2var(s2v_d, s2v_n, d['name'], 1)
+							line = 'lsph ' + str(sv) + ',"' + tati_create(same_hierarchy, fgimage_dir, d2['storage'], d2['width'], d2['height'], d2['left'], d2['top']) + '",0,0:print 1\n'
 
 					elif kr_cmd == 'chara_mod':
 						d2 = {}
@@ -251,19 +403,25 @@ def text_cnv():
 						
 						time = d.get('time') if d.get('time') else False
 						if time:
-							line = 'lsp ' + str(str2var(d['name'], 1)) + ',"' + tati_create(d2['storage'], d2['width'], d2['height'], d2['left'], d2['top']) + '",0,0:print ' + effect_edit(time, 'crossfade') + '\n'
+							s, effect_startnum, effect_list = effect_edit(time, 'crossfade', effect_startnum, effect_list)
+							s2v_d, s2v_n, sv = str2var(s2v_d, s2v_n, d['name'], 1)
+							line = 'lsp ' + str(sv) + ',"' + tati_create(same_hierarchy, fgimage_dir, d2['storage'], d2['width'], d2['height'], d2['left'], d2['top']) + '",0,0:print ' + s + '\n'
 						else:
-							line = 'lsph ' + str(str2var(d['name'], 1)) + ',"' + tati_create(d2['storage'], d2['width'], d2['height'], d2['left'], d2['top']) + '",0,0:print 1\n'
+							s2v_d, s2v_n, sv = str2var(s2v_d, s2v_n, d['name'], 1)
+							line = 'lsph ' + str(sv) + ',"' + tati_create(same_hierarchy, fgimage_dir, d2['storage'], d2['width'], d2['height'], d2['left'], d2['top']) + '",0,0:print 1\n'
 
 					elif kr_cmd == 'chara_hide':
 						time = d.get('time') if d.get('time') else '10'
-						line = 'vsp ' + str(str2var(d['name'], 1)) + ',0' + effect_edit(time, 'crossfade') + '\n'
+						s, effect_startnum, effect_list = effect_edit(time, 'crossfade', effect_startnum, effect_list)
+						s2v_d, s2v_n, sv = str2var(s2v_d, s2v_n, d['name'], 1)
+						line = 'vsp ' + str(sv) + ',0' + s + '\n'
 
 					elif kr_cmd == 'playse':
 						line = 'dwave 0,"data/sound/' + d['storage'] + '"\n'
 
 					elif kr_cmd == 'playbgm':
-						line = 'bgm "data/bgm_/' + str(str2var(str(d['storage']).lower(), 2)) + '.ogg"\n'
+						s2v_d, s2v_n, sv = str2var(s2v_d, s2v_n, str(d['storage']).lower(), 2)
+						line = 'bgm "data/bgm_/' + str(sv) + '.ogg"\n'
 
 					elif kr_cmd == 'stopbgm':
 						line = 'stop\n'
@@ -293,7 +451,8 @@ def text_cnv():
 
 	txt = txt.replace(r';<<-EFFECT->>', add0txt_effect)
 
-	fusa = str(str2var('ふさわしきメイドであるために（タイトル画面Ver.）.mp3'.lower(), 2))
+	s2v_d, s2v_n, sv = str2var(s2v_d, s2v_n, 'ふさわしきメイドであるために（タイトル画面Ver.）.mp3'.lower(), 2)
+	fusa = str(sv)
 	txt = txt.replace(r';<<-TITLE_BGM->>', r'mov $66,"'+fusa+r'.ogg"')
 
 	txt = txt.replace(r';*gameend', r'mov %334,1:reset')
@@ -302,12 +461,6 @@ def text_cnv():
 	#ガバガバ修正
 	txt = txt.replace(r'lsp 20,"taticnv/chara/seira/裸_腕広げ_すまし.png_1416_2000_0_-10.png",0,0:print 14', '')
 	txt = txt.replace(r'lsph 23,"taticnv/chara/seira/mainvisual.jpg_1280_1810_0_-400.png",0,0', r'lsp 23,"taticnv/chara/seira/mainvisual.jpg_1280_1810_0_-400.png",0,0:print 15')
-
-	if PSP:
-		txt = txt.replace(r';$V2000G200S1280,720L10000', r';$V2000G200S480,272L10000')
-		txt = txt.replace(r';<<-PSP_MODE->>', r'mov %199,1')
-	else:
-		txt = txt.replace(r';<<-PSP_MODE->>', r'mov %199,0')
 
 	open(os.path.join(same_hierarchy,'0.txt'), 'w', errors='ignore').write(txt)
 
@@ -319,77 +472,43 @@ def text_cnv():
 			img = Image.open(img_path)
 			width, height = img.size
 
-			width_r = 1280 if (not PSP) else 480
+			width_r = 1280
 			height_r = height*width_r/width
-
-			if PSP:
-				if int(height_r) == 270:
-					height_r = 272
 
 			img_resize = img.resize((int(width_r), int(height_r)), Image.Resampling.LANCZOS)
 			img_resize.save(img_path.replace('bgimage', 'bgimage_'), quality=95)
+
 		else:
-			if PSP:
-				img = Image.open(img_path)
-				width, height = img.size
+			shutil.copyfile(img_path, img_path.replace('bgimage', 'bgimage_'))
 
-				width_r = width*480/1280
-				height_r = height*480/1280
-				
-				img_resize = img.resize((int(width_r), int(height_r)), Image.Resampling.LANCZOS)
-				img_resize.save(img_path.replace('bgimage', 'bgimage_'), quality=95)
-
-			else:
-				shutil.copyfile(img_path, img_path.replace('bgimage', 'bgimage_'))
+	return s2v_d, s2v_n
 
 
-	#PSP画像加工(別にdef取れよって感じだけど)
-	if PSP:
-		#正直再帰的に全取得かければよかったと後悔
-		#pathlist2 = glob.glob(os.path.join(bgimage_dir, '*.png'))
-		#pathlist2.extend(glob.glob(os.path.join(bgimage_dir, '*.jpg')))
-		#pathlist2.extend(glob.glob(os.path.join(fgimage_dir, 'chara', 'seira', '*.png')))
-		#pathlist2.extend(glob.glob(os.path.join(fgimage_dir, 'chara', 'seira', '*.jpg')))
-		pathlist2 = (glob.glob(os.path.join(others_dir, 'plugin', 'seira', 'images', 'background', '*.png')))
-		pathlist2.extend(glob.glob(os.path.join(others_dir, 'plugin', 'seira', 'images', 'button', '*.png')))
-		pathlist2.extend(glob.glob(os.path.join(others_dir, 'plugin', 'seira', 'images', 'frame', '*.png')))
-		pathlist2.extend(glob.glob(os.path.join(others_dir, 'plugin', 'seira', 'images', 'logo', '*.png')))
-		pathlist2.extend(glob.glob(os.path.join(image_dir, '*.png')))
-		pathlist2.extend(glob.glob(os.path.join(image_dir, 'button', '*.png')))
-		pathlist2.extend(glob.glob(os.path.join(image_dir, 'config', '*.png')))
-		pathlist2.extend(glob.glob(os.path.join(image_dir, 'title', '*.png')))
-
-		pathlist2.extend(glob.glob(os.path.join(bgimage_dir, 'logo.png')))
-
-		for img_path in pathlist2:
-			img = Image.open(img_path)
-
-			width, height = img.size
-			width_r = width*480/1280
-			height_r = height*480/1280
-
-			if int(height_r) == 270:
-				height_r = 272
-
-			img_resize = img.resize((int(width_r), int(height_r)))
-
-			if os.path.basename(img_path).lower()=='frame.png':#フレーム明るすぎて文字見えないので暗くする
-				enhancer = ImageEnhance.Brightness(img_resize)
-				img_resize = enhancer.enhance(0.6)
-
-			img_resize.save(img_path)
-
-
-def junk_del():
+def junk_del(same_hierarchy, bgimage_dir, bgm_dir):
 	shutil.rmtree(os.path.join(bgimage_dir))
 	shutil.rmtree(bgm_dir)
-	#shutil.rmtree(os.path.join(sound_dir,'seira'))
 	shutil.rmtree(os.path.join(same_hierarchy,'data','scenario'))
 	shutil.rmtree(os.path.join(same_hierarchy,'data','system'))
 	shutil.rmtree(os.path.join(same_hierarchy,'data','video'))
-	pass
 
-text_cnv()
-bgm_cnv()
-music_cnv()
-junk_del()
+
+
+def main():
+	same_hierarchy = (os.path.dirname(sys.argv[0]))#同一階層のパスを変数へ代入
+
+	bgimage_dir = os.path.join(same_hierarchy,'data','bgimage')
+	fgimage_dir = os.path.join(same_hierarchy,'data','fgimage')
+	bgm_dir = os.path.join(same_hierarchy,'data','bgm')
+	sound_dir = os.path.join(same_hierarchy,'data','sound')
+
+	s2v_d={}
+	s2v_n=[20, 20, 1000]#名前sp,
+
+	s2v_d, s2v_n = text_cnv(s2v_d, s2v_n, same_hierarchy, bgimage_dir, fgimage_dir)
+	s2v_d, s2v_n = bgm_cnv(same_hierarchy, s2v_d, s2v_n, bgm_dir)
+	music_cnv(sound_dir)
+	junk_del(same_hierarchy, bgimage_dir, bgm_dir)
+
+
+
+main()
